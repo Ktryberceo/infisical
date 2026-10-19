@@ -25,7 +25,7 @@ import { isUniqueViolation } from "../agent-vault/agent-vault-db-error-fns";
 import { getAgentVaultPermission } from "../agent-vault/agent-vault-permission";
 import { TAgentVaultProxyDALFactory } from "../agent-vault-proxy/agent-vault-proxy-dal";
 import { TAgentVaultSessionDALFactory } from "../agent-vault-session/agent-vault-session-dal";
-import { isOwnerlessSession, isSessionOwnedBy } from "../agent-vault-session/agent-vault-session-fns";
+import { isOrphanedSession, isSessionOwnedBy } from "../agent-vault-session/agent-vault-session-fns";
 import { TAgentVaultSessionLogConfigDALFactory } from "./agent-vault-session-log-config-dal";
 import {
   AGENT_VAULT_SESSION_LOG_CHUNK_ID_TIME_TOLERANCE_MS,
@@ -139,7 +139,7 @@ export const agentVaultSessionLogServiceFactory = ({
     const retirements = [
       session.revokedAt,
       session.expiresAt && session.expiresAt <= now ? session.expiresAt : null,
-      isOwnerlessSession(session) ? session.updatedAt : null
+      isOrphanedSession(session) ? session.updatedAt : null
     ]
       .filter((at): at is Date => Boolean(at))
       .map((at) => at.getTime());

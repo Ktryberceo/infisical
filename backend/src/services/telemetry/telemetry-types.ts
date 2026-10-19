@@ -2515,6 +2515,7 @@ export type TAgentVaultSessionCreatedEvent = {
     sessionId: string;
     accessBundleId: string;
     ttlSeconds: number | null;
+    isOnBehalfOfUser: boolean;
   };
 };
 
