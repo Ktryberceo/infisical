@@ -12,6 +12,7 @@ import {
   TAgentVaultActorIdsDTO,
   TAgentVaultActorRef,
   TAgentVaultDelegation,
+  TAgentVaultDelegationDetail,
   TAgentVaultEnrollment,
   TAgentVaultGrantedMember,
   TAgentVaultMemberWriteResult,
@@ -42,7 +43,7 @@ export const useSetAgentVaultDelegation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ machineIdentityId, ...body }: TSetAgentVaultDelegationDTO) => {
-      const { data } = await apiRequest.put<{ delegation: TAgentVaultDelegation }>(
+      const { data } = await apiRequest.put<{ delegation: TAgentVaultDelegationDetail }>(
         `/api/v1/agent-vault/delegations/${machineIdentityId}`,
         body
       );
