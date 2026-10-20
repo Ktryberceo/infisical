@@ -30,7 +30,11 @@ import {
   TAgentVaultMemberProvidedField
 } from "../agent-vault/agent-vault-enums";
 import { TAgentVaultOwner } from "../agent-vault/agent-vault-owner-fns";
-import { findReachableAccessBundleIds, liveGroupIdsFrom } from "../agent-vault/agent-vault-permission";
+import {
+  findReachableAccessBundleIds,
+  intersectAccessBundleIds,
+  liveGroupIdsFrom
+} from "../agent-vault/agent-vault-permission";
 import { expandStoredVariableReferences, findStoredVariableIds } from "../agent-vault/agent-vault-variable-fns";
 import { TAgentVaultServiceCustomHeaderDALFactory } from "../agent-vault-access-bundle/agent-vault-service-custom-header-dal";
 import { TAgentVaultServiceSubstitutionDALFactory } from "../agent-vault-access-bundle/agent-vault-service-substitution-dal";
@@ -545,8 +549,9 @@ export const agentVaultProxyServiceFactory = ({
 
   // The identity that started a session on a user's behalf has to still be in the org and in Agent Vault, and its
   // delegation has to still cover the user. Read on every resolve, so taking any of them away ends the session on
-  // the proxy's next poll.
-  const $assertActingIdentityStillDelegated = async ({
+  // the proxy's next poll. Returns the bundles the identity reaches (null for every bundle), since the session reaches
+  // only what both the identity and the user reach.
+  const $getActingIdentityReach = async ({
     projectId,
     orgId,
     userId,
@@ -556,7 +561,7 @@ export const agentVaultProxyServiceFactory = ({
     orgId: string;
     userId: string | null;
     actingIdentityId: string | null;
-  }) => {
+  }): Promise<string[] | null> => {
     const refused = () =>
       new UnauthorizedError({
         message: "The machine identity that started this session is no longer allowed to act on behalf of its user"
@@ -571,8 +576,10 @@ export const agentVaultProxyServiceFactory = ({
     });
     if (!orgMembership?.isActive) throw refused();
 
+    let isAdmin: boolean;
+    let liveGroupIds: string[];
     try {
-      const { permission } = await permissionService.getProjectPermission({
+      const { permission, hasRole, memberships } = await permissionService.getProjectPermission({
         actor: ActorType.IDENTITY,
         actorId: actingIdentityId,
         projectId,
@@ -583,6 +590,8 @@ export const agentVaultProxyServiceFactory = ({
       if (!permission.can(ProjectPermissionAgentVaultSessionActions.Read, ProjectPermissionSub.AgentVaultSessions)) {
         throw refused();
       }
+      isAdmin = hasRole(ProjectMembershipRole.Admin);
+      liveGroupIds = liveGroupIdsFrom(memberships);
     } catch (error) {
       if (error instanceof ForbiddenRequestError && error.name === "ProjectMembershipNotFound") throw refused();
       throw error;
@@ -591,6 +600,13 @@ export const agentVaultProxyServiceFactory = ({
     if (!(await agentVaultDelegationDAL.identityCoversUser({ projectId, identityId: actingIdentityId, userId }))) {
       throw refused();
     }
+
+    if (isAdmin) return null;
+    return findReachableAccessBundleIds(membershipDAL, {
+      projectId,
+      actor: { type: ActorType.IDENTITY, id: actingIdentityId },
+      groupIds: liveGroupIds
+    });
   };
 
   /** The only endpoint that decrypts a credential. The proxy's JWT authorizes; the session token is a selector. */
@@ -615,14 +631,16 @@ export const agentVaultProxyServiceFactory = ({
       throw new UnauthorizedError({ message: "The identity this session belonged to has been deleted" });
     }
     // The name marks an on-behalf-of session even after deleting the identity nulls its id.
-    if (session.actingIdentityName) {
-      await $assertActingIdentityStillDelegated({
-        projectId: session.projectId,
-        orgId,
-        userId: session.userId ?? null,
-        actingIdentityId: session.actingIdentityId ?? null
-      });
-    }
+    const actingIdentity = session.actingIdentityName
+      ? {
+          reach: await $getActingIdentityReach({
+            projectId: session.projectId,
+            orgId,
+            userId: session.userId ?? null,
+            actingIdentityId: session.actingIdentityId ?? null
+          })
+        }
+      : null;
 
     const actor = session.userId
       ? { type: ActorType.USER as const, id: session.userId }
@@ -669,13 +687,14 @@ export const agentVaultProxyServiceFactory = ({
       throw error;
     }
 
-    const accessBundleIds = isAdmin
+    const actorReach = isAdmin
       ? null
       : await findReachableAccessBundleIds(membershipDAL, {
           projectId: session.projectId,
           actor,
           groupIds: liveGroupIds
         });
+    const accessBundleIds = actingIdentity ? intersectAccessBundleIds(actorReach, actingIdentity.reach) : actorReach;
 
     const rows = await agentVaultResolveDAL.findResolvableServices({
       sessionId: session.id,
