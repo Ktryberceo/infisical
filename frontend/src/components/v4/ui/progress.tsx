@@ -6,67 +6,69 @@ import { cn } from "../lib/utils";
 import styles from "./controls.module.css";
 import helperStyles from "./helpers.module.css";
 
-export const Progress = React.forwardRef<
-  React.ComponentRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
-    label?: string;
-    valueLabel?: string;
-    tone?: "ink" | "warn" | "bad" | "auto";
-    warnAt?: number;
-  }
->(
-  (
-    { className, value, max = 100, label, valueLabel, tone = "ink", warnAt = 0.8, ...props },
-    ref
-  ) => {
-    const resolvedMax = Number.isFinite(max) && max > 0 ? max : 100;
-    const resolvedValue =
-      typeof value === "number" && Number.isFinite(value) && value >= 0
-        ? Math.min(value, resolvedMax)
-        : null;
-    const ratio = typeof value === "number" ? value / resolvedMax : 0;
-    const color = tone === "auto" ? (ratio >= 1 ? "bad" : ratio >= warnAt ? "warn" : "ink") : tone;
-    return (
-      <div data-slot="progress-group" className={styles.progressGroup}>
-        {(label || valueLabel) && (
-          <div className={styles.progressLabels}>
-            {label && <span>{label}</span>}
-            {valueLabel && <span className={styles.mono}>{valueLabel}</span>}
-          </div>
+export function Progress({
+  className,
+  value,
+  max = 100,
+  label,
+  valueLabel,
+  tone = "ink",
+  warnAt = 0.8,
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
+  label?: string;
+  valueLabel?: string;
+  tone?: "ink" | "warn" | "bad" | "auto";
+  warnAt?: number;
+} & { ref?: React.Ref<React.ComponentRef<typeof ProgressPrimitive.Root>> }) {
+  const resolvedMax = Number.isFinite(max) && max > 0 ? max : 100;
+  const resolvedValue =
+    typeof value === "number" && Number.isFinite(value) && value >= 0
+      ? Math.min(value, resolvedMax)
+      : null;
+  const ratio = typeof value === "number" ? value / resolvedMax : 0;
+  const color = tone === "auto" ? (ratio >= 1 ? "bad" : ratio >= warnAt ? "warn" : "ink") : tone;
+  return (
+    <div data-slot="progress-group" className={styles.progressGroup}>
+      {(label || valueLabel) && (
+        <div className={styles.progressLabels}>
+          {label && <span>{label}</span>}
+          {valueLabel && <span className={styles.mono}>{valueLabel}</span>}
+        </div>
+      )}
+      <ProgressPrimitive.Root
+        ref={ref}
+        data-slot="progress"
+        data-tone={tone}
+        value={resolvedValue}
+        max={resolvedMax}
+        aria-label={label}
+        aria-valuetext={
+          valueLabel ??
+          (typeof value === "number" && value > resolvedMax
+            ? `${value} of ${resolvedMax}, over`
+            : undefined)
+        }
+        className={cn(
+          "relative flex h-1.5 w-full items-center overflow-hidden bg-[color:var(--v4-line-soft)]",
+          styles.progress,
+          className
         )}
-        <ProgressPrimitive.Root
-          ref={ref}
-          data-slot="progress"
-          data-tone={tone}
-          value={resolvedValue}
-          max={resolvedMax}
-          aria-label={label}
-          aria-valuetext={
-            valueLabel ??
-            (typeof value === "number" && value > resolvedMax
-              ? `${value} of ${resolvedMax}, over`
-              : undefined)
-          }
-          className={cn(
-            "relative flex h-1.5 w-full items-center overflow-hidden bg-[color:var(--v4-line-soft)]",
-            styles.progress,
-            className
-          )}
-          {...props}
-        >
-          <ProgressPrimitive.Indicator
-            data-slot="progress-indicator"
-            data-tone={color}
-            className={cn("size-full flex-1 transition-all", styles.progressIndicator)}
-            style={{
-              transform: `translateX(-${100 - ((resolvedValue ?? 0) / resolvedMax) * 100}%)`
-            }}
-          />
-        </ProgressPrimitive.Root>
-      </div>
-    );
-  }
-);
+        {...props}
+      >
+        <ProgressPrimitive.Indicator
+          data-slot="progress-indicator"
+          data-tone={color}
+          className={cn("size-full flex-1 transition-all", styles.progressIndicator)}
+          style={{
+            transform: `translateX(-${100 - ((resolvedValue ?? 0) / resolvedMax) * 100}%)`
+          }}
+        />
+      </ProgressPrimitive.Root>
+    </div>
+  );
+}
 Progress.displayName = "Progress";
 
 export const ProgressSteps = ({

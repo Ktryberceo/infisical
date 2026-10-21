@@ -21,63 +21,57 @@ const NavigationViewportContext = React.createContext<{
   value: string;
 } | null>(null);
 
-const NavigationMenu = React.forwardRef<
-  React.ComponentRef<typeof NavigationMenuPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root> & {
-    viewport?: boolean;
-  }
->(
-  (
-    {
-      className,
-      children,
-      viewport = true,
-      orientation = "horizontal",
-      value: controlledValue,
-      defaultValue = "",
-      onValueChange,
-      ...props
-    },
-    ref
-  ) => {
-    const [container, setContainer] = React.useState<HTMLDivElement | null>(null);
-    const [value, setValue] = useControllableState({
-      value: controlledValue,
-      defaultValue,
-      onChange: onValueChange
-    });
-    const context = React.useMemo(
-      () => ({ container, setContainer, viewport, orientation, value }),
-      [container, viewport, orientation, value]
-    );
-    return (
-      <NavigationViewportContext.Provider value={context}>
-        <NavigationMenuPrimitive.Root
-          ref={ref}
-          data-slot="navigation-menu"
-          data-viewport={viewport || Boolean(container)}
-          value={value}
-          orientation={orientation}
-          onValueChange={setValue}
-          className={cn(
-            "group/navigation-menu relative flex max-w-max flex-1 items-center justify-center",
-            className
-          )}
-          {...props}
-        >
-          {children}
-          {viewport && <NavigationMenuViewport />}
-        </NavigationMenuPrimitive.Root>
-      </NavigationViewportContext.Provider>
-    );
-  }
-);
+function NavigationMenu({
+  className,
+  children,
+  viewport = true,
+  orientation = "horizontal",
+  value: controlledValue,
+  defaultValue = "",
+  onValueChange,
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root> & {
+  viewport?: boolean;
+} & { ref?: React.Ref<React.ComponentRef<typeof NavigationMenuPrimitive.Root>> }) {
+  const [container, setContainer] = React.useState<HTMLDivElement | null>(null);
+  const [value, setValue] = useControllableState({
+    value: controlledValue,
+    defaultValue,
+    onChange: onValueChange
+  });
+  const context = React.useMemo(
+    () => ({ container, setContainer, viewport, orientation, value }),
+    [container, viewport, orientation, value]
+  );
+  return (
+    <NavigationViewportContext value={context}>
+      <NavigationMenuPrimitive.Root
+        ref={ref}
+        data-slot="navigation-menu"
+        data-viewport={viewport || Boolean(container)}
+        value={value}
+        orientation={orientation}
+        onValueChange={setValue}
+        className={cn(
+          "group/navigation-menu relative flex max-w-max flex-1 items-center justify-center",
+          className
+        )}
+        {...props}
+      >
+        {children}
+        {viewport && <NavigationMenuViewport />}
+      </NavigationMenuPrimitive.Root>
+    </NavigationViewportContext>
+  );
+}
 NavigationMenu.displayName = "NavigationMenu";
 
-const NavigationMenuList = React.forwardRef<
-  React.ComponentRef<typeof NavigationMenuPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List>
->(({ className, ...props }, ref) => {
+function NavigationMenuList({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof NavigationMenuPrimitive.List>) {
   return (
     <NavigationMenuPrimitive.List
       ref={ref}
@@ -86,13 +80,14 @@ const NavigationMenuList = React.forwardRef<
       {...props}
     />
   );
-});
+}
 NavigationMenuList.displayName = "NavigationMenuList";
 
-const NavigationMenuItem = React.forwardRef<
-  React.ComponentRef<typeof NavigationMenuPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Item>
->(({ className, ...props }, ref) => {
+function NavigationMenuItem({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Item>) {
   return (
     <NavigationMenuPrimitive.Item
       ref={ref}
@@ -101,15 +96,17 @@ const NavigationMenuItem = React.forwardRef<
       {...props}
     />
   );
-});
+}
 NavigationMenuItem.displayName = "NavigationMenuItem";
 
 const navigationMenuTriggerStyle = cva([controlStyles.focusOutline, menu.navItem]);
 
-const NavigationMenuTrigger = React.forwardRef<
-  React.ElementRef<typeof NavigationMenuPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger>
->(({ className, children, ...props }, ref) => {
+function NavigationMenuTrigger({
+  className,
+  children,
+  ref,
+  ...props
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger>) {
   return (
     <NavigationMenuPrimitive.Trigger
       ref={ref}
@@ -121,13 +118,15 @@ const NavigationMenuTrigger = React.forwardRef<
       <Icon name="chev-down" className={menu.navChevron} />
     </NavigationMenuPrimitive.Trigger>
   );
-});
+}
 NavigationMenuTrigger.displayName = "NavigationMenuTrigger";
 
-const NavigationMenuContent = React.forwardRef<
-  React.ComponentRef<typeof NavigationMenuPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Content>
->(({ className, forceMount, ...props }, ref) => {
+function NavigationMenuContent({
+  className,
+  forceMount,
+  ref,
+  ...props
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Content>) {
   const context = React.useContext(NavigationViewportContext);
   const node = React.useRef<HTMLDivElement | null>(null);
   const wasOpen = React.useRef(false);
@@ -145,7 +144,7 @@ const NavigationMenuContent = React.forwardRef<
   const retainForViewport = Boolean(context?.container && !context.value && wasOpen.current);
   const inViewport = Boolean(context?.viewport || context?.container);
   const content = (
-    <NavigationContentContext.Provider value>
+    <NavigationContentContext value>
       <NavigationMenuPrimitive.Content
         ref={attach}
         forceMount={forceMount || retainForViewport ? true : undefined}
@@ -168,20 +167,25 @@ const NavigationMenuContent = React.forwardRef<
         )}
         {...props}
       />
-    </NavigationContentContext.Provider>
+    </NavigationContentContext>
   );
   return context?.container
     ? createPortal(content, context.container)
     : context?.viewport
       ? null
       : content;
-});
+}
 NavigationMenuContent.displayName = "NavigationMenuContent";
 
-const NavigationMenuViewport = React.forwardRef<
-  React.ComponentRef<typeof NavigationMenuPrimitive.Viewport>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport>
->(({ className, forceMount, asChild, style, children, ...props }, ref) => {
+function NavigationMenuViewport({
+  className,
+  forceMount,
+  asChild,
+  style,
+  children,
+  ref,
+  ...props
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Viewport>) {
   const context = React.useContext(NavigationViewportContext);
   const node = React.useRef<HTMLDivElement | null>(null);
   const [dimensions, setDimensions] = React.useState<{ width: number; height: number } | null>(
@@ -291,13 +295,14 @@ const NavigationMenuViewport = React.forwardRef<
       </Presence>
     </div>
   );
-});
+}
 NavigationMenuViewport.displayName = "NavigationMenuViewport";
 
-const NavigationMenuLink = React.forwardRef<
-  React.ComponentRef<typeof NavigationMenuPrimitive.Link>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Link>
->(({ className, ...props }, ref) => {
+function NavigationMenuLink({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Link>) {
   const inContent = React.useContext(NavigationContentContext);
   return (
     <NavigationMenuPrimitive.Link
@@ -312,13 +317,14 @@ const NavigationMenuLink = React.forwardRef<
       {...props}
     />
   );
-});
+}
 NavigationMenuLink.displayName = "NavigationMenuLink";
 
-const NavigationMenuIndicator = React.forwardRef<
-  React.ComponentRef<typeof NavigationMenuPrimitive.Indicator>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Indicator>
->(({ className, ...props }, ref) => {
+function NavigationMenuIndicator({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Indicator>) {
   return (
     <NavigationMenuPrimitive.Indicator
       ref={ref}
@@ -332,7 +338,7 @@ const NavigationMenuIndicator = React.forwardRef<
       <div className="relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm bg-border shadow-md" />
     </NavigationMenuPrimitive.Indicator>
   );
-});
+}
 NavigationMenuIndicator.displayName = "NavigationMenuIndicator";
 
 export {

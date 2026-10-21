@@ -267,12 +267,13 @@ describe("shared menu recipes", () => {
 
   it("mounts an asChild PopoverAnchor child once and keeps the caller's ref on it", async () => {
     const mounts = vi.fn();
-    const Destination = React.forwardRef<HTMLParagraphElement, React.ComponentProps<"p">>(
-      (props, ref) => {
-        React.useEffect(() => mounts(), []);
-        return <p ref={ref} {...props} />;
-      }
-    );
+    function Destination({
+      ref,
+      ...props
+    }: React.ComponentProps<"p"> & { ref?: React.Ref<HTMLParagraphElement> }) {
+      React.useEffect(() => mounts(), []);
+      return <p ref={ref} {...props} />;
+    }
     const anchor = React.createRef<HTMLParagraphElement>();
     const Example = ({ open }: { open: boolean }) => (
       <Popover open={open}>

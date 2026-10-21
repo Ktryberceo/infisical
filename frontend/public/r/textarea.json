@@ -10,7 +10,7 @@
       "path": "src/components/v4/ui/textarea.tsx",
       "type": "registry:file",
       "target": "src/components/v4/ui/textarea.tsx",
-      "content": "import * as React from \"react\";\n\nimport { useFieldControlAttributes } from \"../lib/field-context\";\nimport { cn } from \"../lib/utils\";\n\nimport controlStyles from \"./controls.module.css\";\n\nconst Textarea = React.forwardRef<\n  React.ElementRef<\"textarea\">,\n  React.ComponentPropsWithoutRef<\"textarea\">\n>(({ className, ...props }, ref) => {\n  const fieldAttributes = useFieldControlAttributes(props);\n  return (\n    <textarea\n      ref={ref}\n      data-slot=\"textarea\"\n      data-size=\"sm\"\n      className={cn(controlStyles.field, controlStyles.textarea, \"flex w-full\", className)}\n      {...props}\n      {...fieldAttributes}\n    />\n  );\n});\nTextarea.displayName = \"Textarea\";\n\nexport { Textarea };\n"
+      "content": "import * as React from \"react\";\n\nimport { useFieldControlAttributes } from \"../lib/field-context\";\nimport { cn } from \"../lib/utils\";\n\nimport controlStyles from \"./controls.module.css\";\n\nfunction Textarea({ className, ref, ...props }: React.ComponentProps<\"textarea\">) {\n  const fieldAttributes = useFieldControlAttributes(props);\n  return (\n    <textarea\n      ref={ref}\n      data-slot=\"textarea\"\n      data-size=\"sm\"\n      className={cn(controlStyles.field, controlStyles.textarea, \"flex w-full\", className)}\n      {...props}\n      {...fieldAttributes}\n    />\n  );\n}\nTextarea.displayName = \"Textarea\";\n\nexport { Textarea };\n"
     },
     {
       "path": "src/components/v4/ui/controls.module.css",

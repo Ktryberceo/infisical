@@ -6,27 +6,22 @@ import { Icon, type IconName } from "./icon";
 
 import controlStyles from "./controls.module.css";
 
-const Empty = React.forwardRef<React.ComponentRef<"div">, React.ComponentPropsWithoutRef<"div">>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        data-slot="empty"
-        className={cn(
-          "flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-xl border-dashed p-6 text-center text-balance",
-          className
-        )}
-        {...props}
-      />
-    );
-  }
-);
+function Empty({ className, ref, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      ref={ref}
+      data-slot="empty"
+      className={cn(
+        "flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-xl border-dashed p-6 text-center text-balance",
+        className
+      )}
+      {...props}
+    />
+  );
+}
 Empty.displayName = "Empty";
 
-const EmptyHeader = React.forwardRef<
-  React.ComponentRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ className, ...props }, ref) => {
+function EmptyHeader({ className, ref, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       ref={ref}
@@ -35,7 +30,7 @@ const EmptyHeader = React.forwardRef<
       {...props}
     />
   );
-});
+}
 EmptyHeader.displayName = "EmptyHeader";
 
 const emptyMediaVariants = cva(
@@ -53,10 +48,13 @@ const emptyMediaVariants = cva(
   }
 );
 
-const EmptyMedia = React.forwardRef<
-  React.ComponentRef<"div">,
-  React.ComponentPropsWithoutRef<"div"> & VariantProps<typeof emptyMediaVariants>
->(({ className, variant = "default", ...props }, ref) => {
+function EmptyMedia({
+  className,
+  variant = "default",
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<"div"> &
+  VariantProps<typeof emptyMediaVariants> & { ref?: React.Ref<React.ComponentRef<"div">> }) {
   return (
     <div
       ref={ref}
@@ -66,13 +64,10 @@ const EmptyMedia = React.forwardRef<
       {...props}
     />
   );
-});
+}
 EmptyMedia.displayName = "EmptyMedia";
 
-const EmptyTitle = React.forwardRef<
-  React.ComponentRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ className, ...props }, ref) => {
+function EmptyTitle({ className, ref, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       ref={ref}
@@ -81,7 +76,7 @@ const EmptyTitle = React.forwardRef<
       {...props}
     />
   );
-});
+}
 EmptyTitle.displayName = "EmptyTitle";
 
 function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
@@ -98,10 +93,7 @@ function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
   );
 }
 
-const EmptyContent = React.forwardRef<
-  React.ComponentRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ className, ...props }, ref) => {
+function EmptyContent({ className, ref, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       ref={ref}
@@ -113,7 +105,7 @@ const EmptyContent = React.forwardRef<
       {...props}
     />
   );
-});
+}
 EmptyContent.displayName = "EmptyContent";
 
 export { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle };

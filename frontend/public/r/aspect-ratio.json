@@ -13,7 +13,7 @@
       "path": "src/components/v4/ui/aspect-ratio.tsx",
       "type": "registry:file",
       "target": "src/components/v4/ui/aspect-ratio.tsx",
-      "content": "\"use client\";\n\nimport * as React from \"react\";\nimport { AspectRatio as AspectRatioPrimitive } from \"radix-ui\";\n\nconst AspectRatio = React.forwardRef<\n  React.ComponentRef<typeof AspectRatioPrimitive.Root>,\n  React.ComponentPropsWithoutRef<typeof AspectRatioPrimitive.Root>\n>(({ ...props }, ref) => {\n  return <AspectRatioPrimitive.Root ref={ref} data-slot=\"aspect-ratio\" {...props} />;\n});\nAspectRatio.displayName = \"AspectRatio\";\n\nexport { AspectRatio };\n"
+      "content": "\"use client\";\n\nimport * as React from \"react\";\nimport { AspectRatio as AspectRatioPrimitive } from \"radix-ui\";\n\nfunction AspectRatio({ ref, ...props }: React.ComponentProps<typeof AspectRatioPrimitive.Root>) {\n  return <AspectRatioPrimitive.Root ref={ref} data-slot=\"aspect-ratio\" {...props} />;\n}\nAspectRatio.displayName = \"AspectRatio\";\n\nexport { AspectRatio };\n"
     }
   ]
 }

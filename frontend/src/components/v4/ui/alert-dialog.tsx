@@ -23,12 +23,12 @@ function AlertDialog({ ...props }: React.ComponentProps<typeof AlertDialogPrimit
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
 }
 
-const AlertDialogTrigger = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Trigger>
->(({ ...props }, ref) => {
+function AlertDialogTrigger({
+  ref,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Trigger>) {
   return <AlertDialogPrimitive.Trigger ref={ref} data-slot="alert-dialog-trigger" {...props} />;
-});
+}
 AlertDialogTrigger.displayName = "AlertDialogTrigger";
 
 function AlertDialogPortal({ ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Portal>) {
@@ -41,10 +41,11 @@ function AlertDialogPortal({ ...props }: React.ComponentProps<typeof AlertDialog
   );
 }
 
-const AlertDialogOverlay = React.forwardRef<
-  React.ElementRef<typeof AlertDialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>
->(({ className, ...props }, ref) => {
+function AlertDialogOverlay({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Overlay>) {
   return (
     <AlertDialogPrimitive.Overlay
       ref={ref}
@@ -53,95 +54,92 @@ const AlertDialogOverlay = React.forwardRef<
       {...props}
     />
   );
-});
+}
 AlertDialogOverlay.displayName = "AlertDialogOverlay";
 
-const AlertDialogContent = React.forwardRef<
-  React.ComponentRef<typeof AlertDialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> & {
-    size?: "default" | "sm";
-    /** danger shows a bad-tone lead tile (trash unless icon or AlertDialogMedia is given); neutral and unset show no automatic tile. */
-    tone?: "danger" | "neutral";
-    icon?: IconName;
-    /** The exact text the person types before the action enables. */
-    confirmText?: string;
-  }
->(
-  (
-    { className, size = "default", tone, icon, confirmText, onEscapeKeyDown, children, ...props },
-    ref
-  ) => {
-    const escape = useOwnedEscape(ref, onEscapeKeyDown);
-    const [typed, setTyped] = React.useState("");
-    const [hasMedia, setHasMedia] = React.useState(false);
-    const toneValue = React.useMemo(() => ({ tone, claimMedia: setHasMedia }), [tone]);
-    const fieldId = React.useId();
-    const field = confirmText !== undefined && (
-      <div data-slot="alert-dialog-confirm" className="flex flex-col gap-1.5">
-        <label htmlFor={fieldId} className="text-sm">
-          Type <code className="font-mono">{confirmText}</code> to confirm
-        </label>
-        <Input
-          id={fieldId}
-          mono
-          autoFocus
-          autoComplete="off"
-          spellCheck={false}
-          value={typed}
-          onChange={(event) => setTyped(event.target.value)}
-        />
-      </div>
-    );
-    const parts = React.Children.toArray(children);
-    const footerAt = parts.findIndex(
-      (child) => React.isValidElement(child) && child.type === AlertDialogFooter
-    );
-    if (field) parts.splice(footerAt < 0 ? parts.length : footerAt, 0, field);
-    return (
-      <AlertDialogPortal>
-        <AlertDialogOverlay />
-        <AlertDialogPrimitive.Content
-          ref={escape.ref}
-          data-slot="alert-dialog-content"
-          data-scroll-fade="y"
-          data-size={size}
-          data-tone={tone}
-          className={cn(
-            "group/alert-dialog-content z-50 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-sm",
-            overlay.pop,
-            overlay.dialog,
-            className
-          )}
-          {...props}
-          onOpenAutoFocus={(event) => {
-            props.onOpenAutoFocus?.(event);
-            if (confirmText !== undefined) setTyped("");
-          }}
-          onEscapeKeyDown={escape.onEscapeKeyDown}
-        >
-          <ConfirmContext.Provider
-            value={{ ready: confirmText === undefined || typed === confirmText }}
-          >
-            <ToneContext.Provider value={toneValue}>
-              {!hasMedia && (icon || tone === "danger") && (
-                <AlertDialogMedia data-auto="">
-                  <Icon name={icon ?? "trash"} size={20} />
-                </AlertDialogMedia>
-              )}
-              {parts}
-            </ToneContext.Provider>
-          </ConfirmContext.Provider>
-        </AlertDialogPrimitive.Content>
-      </AlertDialogPortal>
-    );
-  }
-);
+function AlertDialogContent({
+  className,
+  size = "default",
+  tone,
+  icon,
+  confirmText,
+  onEscapeKeyDown,
+  children,
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content> & {
+  size?: "default" | "sm";
+  /** danger shows a bad-tone lead tile (trash unless icon or AlertDialogMedia is given); neutral and unset show no automatic tile. */
+  tone?: "danger" | "neutral";
+  icon?: IconName;
+  /** The exact text the person types before the action enables. */
+  confirmText?: string;
+} & { ref?: React.Ref<React.ComponentRef<typeof AlertDialogPrimitive.Content>> }) {
+  const escape = useOwnedEscape(ref, onEscapeKeyDown);
+  const [typed, setTyped] = React.useState("");
+  const [hasMedia, setHasMedia] = React.useState(false);
+  const toneValue = React.useMemo(() => ({ tone, claimMedia: setHasMedia }), [tone]);
+  const fieldId = React.useId();
+  const field = confirmText !== undefined && (
+    <div data-slot="alert-dialog-confirm" className="flex flex-col gap-1.5">
+      <label htmlFor={fieldId} className="text-sm">
+        Type <code className="font-mono">{confirmText}</code> to confirm
+      </label>
+      <Input
+        id={fieldId}
+        mono
+        autoFocus
+        autoComplete="off"
+        spellCheck={false}
+        value={typed}
+        onChange={(event) => setTyped(event.target.value)}
+      />
+    </div>
+  );
+  const parts = React.Children.toArray(children);
+  const footerAt = parts.findIndex(
+    (child) => React.isValidElement(child) && child.type === AlertDialogFooter
+  );
+  if (field) parts.splice(footerAt < 0 ? parts.length : footerAt, 0, field);
+  return (
+    <AlertDialogPortal>
+      <AlertDialogOverlay />
+      <AlertDialogPrimitive.Content
+        ref={escape.ref}
+        data-slot="alert-dialog-content"
+        data-scroll-fade="y"
+        data-size={size}
+        data-tone={tone}
+        className={cn(
+          "group/alert-dialog-content z-50 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-sm",
+          overlay.pop,
+          overlay.dialog,
+          className
+        )}
+        {...props}
+        onOpenAutoFocus={(event) => {
+          props.onOpenAutoFocus?.(event);
+          if (confirmText !== undefined) setTyped("");
+        }}
+        onEscapeKeyDown={escape.onEscapeKeyDown}
+      >
+        <ConfirmContext value={{ ready: confirmText === undefined || typed === confirmText }}>
+          <ToneContext value={toneValue}>
+            {!hasMedia && (icon || tone === "danger") && (
+              <AlertDialogMedia data-auto="">
+                <Icon name={icon ?? "trash"} size={20} />
+              </AlertDialogMedia>
+            )}
+            {parts}
+          </ToneContext>
+        </ConfirmContext>
+      </AlertDialogPrimitive.Content>
+    </AlertDialogPortal>
+  );
+}
 AlertDialogContent.displayName = "AlertDialogContent";
 
-const AlertDialogHeader = React.forwardRef<
-  React.ComponentRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ className, ...props }, ref) => {
+function AlertDialogHeader({ className, ref, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       ref={ref}
@@ -150,13 +148,10 @@ const AlertDialogHeader = React.forwardRef<
       {...props}
     />
   );
-});
+}
 AlertDialogHeader.displayName = "AlertDialogHeader";
 
-const AlertDialogFooter = React.forwardRef<
-  React.ComponentRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ className, ...props }, ref) => {
+function AlertDialogFooter({ className, ref, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       ref={ref}
@@ -168,13 +163,10 @@ const AlertDialogFooter = React.forwardRef<
       {...props}
     />
   );
-});
+}
 AlertDialogFooter.displayName = "AlertDialogFooter";
 
-const AlertDialogMedia = React.forwardRef<
-  React.ComponentRef<"div">,
-  React.ComponentPropsWithoutRef<"div">
->(({ className, ...props }, ref) => {
+function AlertDialogMedia({ className, ref, ...props }: React.ComponentProps<"div">) {
   const { tone, claimMedia } = React.useContext(ToneContext);
   const auto = (props as { "data-auto"?: string })["data-auto"] !== undefined;
   React.useLayoutEffect(() => {
@@ -194,13 +186,14 @@ const AlertDialogMedia = React.forwardRef<
       {...props}
     />
   );
-});
+}
 AlertDialogMedia.displayName = "AlertDialogMedia";
 
-const AlertDialogTitle = React.forwardRef<
-  React.ComponentRef<typeof AlertDialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
->(({ className, ...props }, ref) => {
+function AlertDialogTitle({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Title>) {
   return (
     <AlertDialogPrimitive.Title
       ref={ref}
@@ -209,13 +202,14 @@ const AlertDialogTitle = React.forwardRef<
       {...props}
     />
   );
-});
+}
 AlertDialogTitle.displayName = "AlertDialogTitle";
 
-const AlertDialogDescription = React.forwardRef<
-  React.ComponentRef<typeof AlertDialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
->(({ className, ...props }, ref) => {
+function AlertDialogDescription({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Description>) {
   return (
     <AlertDialogPrimitive.Description
       ref={ref}
@@ -227,14 +221,21 @@ const AlertDialogDescription = React.forwardRef<
       {...props}
     />
   );
-});
+}
 AlertDialogDescription.displayName = "AlertDialogDescription";
 
-const AlertDialogAction = React.forwardRef<
-  React.ComponentRef<typeof AlertDialogPrimitive.Action>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> &
-    Pick<React.ComponentPropsWithoutRef<typeof Button>, "variant" | "size">
->(({ className, variant = "default", size = "default", asChild, disabled, ...props }, ref) => {
+function AlertDialogAction({
+  className,
+  variant = "default",
+  size = "default",
+  asChild,
+  disabled,
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> &
+  Pick<React.ComponentPropsWithoutRef<typeof Button>, "variant" | "size"> & {
+    ref?: React.Ref<React.ComponentRef<typeof AlertDialogPrimitive.Action>>;
+  }) {
   const { ready } = React.useContext(ConfirmContext);
   if (asChild)
     return (
@@ -257,14 +258,20 @@ const AlertDialogAction = React.forwardRef<
       />
     </Button>
   );
-});
+}
 AlertDialogAction.displayName = "AlertDialogAction";
 
-const AlertDialogCancel = React.forwardRef<
-  React.ComponentRef<typeof AlertDialogPrimitive.Cancel>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> &
-    Pick<React.ComponentPropsWithoutRef<typeof Button>, "variant" | "size">
->(({ className, variant = "outline", size = "default", asChild, ...props }, ref) => {
+function AlertDialogCancel({
+  className,
+  variant = "outline",
+  size = "default",
+  asChild,
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> &
+  Pick<React.ComponentPropsWithoutRef<typeof Button>, "variant" | "size"> & {
+    ref?: React.Ref<React.ComponentRef<typeof AlertDialogPrimitive.Cancel>>;
+  }) {
   if (asChild)
     return (
       <AlertDialogPrimitive.Cancel
@@ -285,7 +292,7 @@ const AlertDialogCancel = React.forwardRef<
       />
     </Button>
   );
-});
+}
 AlertDialogCancel.displayName = "AlertDialogCancel";
 
 export {
