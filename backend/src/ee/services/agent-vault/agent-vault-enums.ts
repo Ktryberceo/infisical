@@ -62,7 +62,7 @@ export enum AgentVaultVariableReferenceField {
 }
 
 export enum AgentVaultVariableScope {
-  Shared = "shared",
+  Global = "global",
   Personal = "personal"
 }
 
