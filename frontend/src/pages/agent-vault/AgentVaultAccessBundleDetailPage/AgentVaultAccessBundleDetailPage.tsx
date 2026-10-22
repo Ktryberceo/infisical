@@ -141,7 +141,7 @@ export const AgentVaultAccessBundleDetailPage = () => {
             <p>
               {needsSetup.length === 1
                 ? `${needsSetup[0].name} requires your personal values.`
-                : `${needsSetup.length} services require your personal values: ${needsSetup.map((service) => service.name).join(", ")}.`}{" "}
+                : `${needsSetup.length} services require your personal values.`}{" "}
               Sessions from this bundle can&apos;t reach {needsSetup.length === 1 ? "it" : "them"}{" "}
               until you set {needsSetup.length === 1 ? "it" : "them"} up.
             </p>
